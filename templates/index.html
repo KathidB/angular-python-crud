@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prosty  CRUD</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="hero">
+        <p class="eyebrow">Prosta aplikacja CRUD</p>
+        <h1>Zarządzanie użytkownikami</h1>
+        <p class="subtitle">
+          Prosty projekt  przedstawiający CRUD we Flasku.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2 id="form-title">Dodaj użytkownika</h2>
+        <form id="user-form" class="form">
+          <input type="hidden" id="user-id" />
+
+          <label for="name">Imię</label>
+          <input id="name" name="name" type="text" placeholder="Np. Marta" required />
+
+          <label for="age">Wiek</label>
+          <input id="age" name="age" type="number" min="1" placeholder="Np. 24" required />
+
+          <div class="actions">
+            <button type="submit" class="btn primary">Zapisz</button>
+            <button type="button" id="cancel-edit" class="btn secondary" hidden>Anuluj edycję</button>
+          </div>
+        </form>
+        <p id="message" class="message" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Lista użytkowników</h2>
+          <button id="refresh-btn" class="btn secondary">Odśwież</button>
+        </div>
+        <div id="users-list" class="users-list"></div>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById("user-form");
+      const userIdInput = document.getElementById("user-id");
+      const nameInput = document.getElementById("name");
+      const ageInput = document.getElementById("age");
+      const message = document.getElementById("message");
+      const usersList = document.getElementById("users-list");
+      const formTitle = document.getElementById("form-title");
+      const cancelEditButton = document.getElementById("cancel-edit");
+      const refreshButton = document.getElementById("refresh-btn");
+
+      async function loadUsers() {
+        const response = await fetch("/api/users");
+        const users = await response.json();
+
+        usersList.innerHTML = "";
+
+        if (!users.length) {
+          usersList.innerHTML = "<p class='empty'>Lista użytkowników jest pusta</p>";
+          return;
+        }
+
+        users.forEach((user) => {
+          const article = document.createElement("article");
+          article.className = "user-card";
+          article.innerHTML = `
+            <div>
+              <h3>${user.name}</h3>
+              <p>Wiek: ${user.age}</p>
+              <span>ID: ${user.id}</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn secondary" data-edit="${user.id}">Edytuj</button>
+              <button class="btn danger" data-delete="${user.id}">Usuń</button>
+            </div>
+          `;
+          usersList.appendChild(article);
+        });
+      }
+
+      function resetForm() {
+        form.reset();
+        userIdInput.value = "";
+        formTitle.textContent = "Dodaj użytkownika";
+        cancelEditButton.hidden = true;
+      }
+
+      function showMessage(text, isError = false) {
+        message.textContent = text;
+        message.className = isError ? "message error" : "message success";
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const payload = {
+          name: nameInput.value.trim(),
+          age: Number(ageInput.value),
+        };
+
+        const userId = userIdInput.value;
+        const url = userId ? `/api/users/${userId}` : "/api/users";
+        const method = userId ? "PUT" : "POST";
+
+        const response = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          showMessage(data.error || "Wystąpił błąd.", true);
+          return;
+        }
+
+        showMessage(userId ? "Użytkownik został zaktualizowany." : "Użytkownik został dodany.");
+        resetForm();
+        loadUsers();
+      });
+
+      usersList.addEventListener("click", async (event) => {
+        const editId = event.target.dataset.edit;
+        const deleteId = event.target.dataset.delete;
+
+        if (editId) {
+          const response = await fetch("/api/users");
+          const users = await response.json();
+          const user = users.find((item) => item.id === Number(editId));
+
+          if (!user) {
+            showMessage("Nie znaleziono użytkownika.", true);
+            return;
+          }
+
+          userIdInput.value = user.id;
+          nameInput.value = user.name;
+          ageInput.value = user.age;
+          formTitle.textContent = "Edytuj użytkownika";
+          cancelEditButton.hidden = false;
+          showMessage("Tryb edycji aktywny.");
+        }
+
+        if (deleteId) {
+          const response = await fetch(`/api/users/${deleteId}`, { method: "DELETE" });
+          const data = await response.json();
+
+          if (!response.ok) {
+            showMessage(data.error || "Nie udało się usunąć użytkownika.", true);
+            return;
+          }
+
+          showMessage("Użytkownik został usunięty.");
+          if (userIdInput.value === deleteId) {
+            resetForm();
+          }
+          loadUsers();
+        }
+      });
+
+      cancelEditButton.addEventListener("click", () => {
+        resetForm();
+        showMessage("Anulowano edycję.");
+      });
+
+      refreshButton.addEventListener("click", loadUsers);
+
+      loadUsers();
+    </script>
+  </body>
+</html>
