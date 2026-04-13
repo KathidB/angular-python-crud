@@ -1,15 +1,10 @@
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
+:host {
+  display: block;
   min-height: 100vh;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #1f1a17;
+  color: #1d2230;
   background:
-    radial-gradient(circle at top, rgba(164, 74, 63, 0.18), transparent 32%),
-    linear-gradient(180deg, #f7f1ea 0%, #efe4d6 100%);
+    radial-gradient(circle at top, rgba(65, 120, 255, 0.18), transparent 32%),
+    linear-gradient(180deg, #eef4ff 0%, #e4f7f1 100%);
 }
 
 .layout {
@@ -27,7 +22,7 @@ body {
   font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
-  color: #a44a3f;
+  color: #2d6cdf;
 }
 
 h1,
@@ -46,16 +41,16 @@ h1 {
 .subtitle {
   max-width: 720px;
   font-size: 17px;
-  color: #6d6158;
+  color: #5b6478;
 }
 
 .card {
   margin-bottom: 20px;
   padding: 24px;
-  background: rgba(255, 253, 249, 0.92);
-  border: 1px solid #dfd2c4;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #d7dfef;
   border-radius: 22px;
-  box-shadow: 0 18px 40px rgba(76, 48, 30, 0.12);
+  box-shadow: 0 18px 40px rgba(47, 72, 120, 0.12);
 }
 
 .form {
@@ -71,14 +66,14 @@ input {
   width: 100%;
   padding: 12px 14px;
   font-size: 16px;
-  border: 1px solid #dfd2c4;
+  border: 1px solid #d7dfef;
   border-radius: 14px;
-  background: #fffdf9;
+  background: #fbfdff;
 }
 
 input:focus {
-  outline: 2px solid rgba(164, 74, 63, 0.2);
-  border-color: #a44a3f;
+  outline: 2px solid rgba(45, 108, 223, 0.2);
+  border-color: #2d6cdf;
 }
 
 .actions,
@@ -110,21 +105,21 @@ input:focus {
 
 .primary {
   color: white;
-  background: #a44a3f;
+  background: #2d6cdf;
 }
 
 .primary:hover {
-  background: #82362d;
+  background: #1f57bc;
 }
 
 .secondary {
-  color: #1f1a17;
-  background: #f7f0e6;
+  color: #1d2230;
+  background: #edf3ff;
 }
 
 .danger {
-  color: #c43f3f;
-  background: rgba(196, 63, 63, 0.12);
+  color: #b63b57;
+  background: rgba(182, 59, 87, 0.12);
 }
 
 .users-list {
@@ -136,9 +131,9 @@ input:focus {
   display: flex;
   gap: 16px;
   padding: 18px;
-  border: 1px solid #dfd2c4;
+  border: 1px solid #d7dfef;
   border-radius: 18px;
-  background: #fffdf9;
+  background: #fbfdff;
 }
 
 .user-card h3 {
@@ -148,7 +143,7 @@ input:focus {
 .user-card p,
 .user-card span,
 .empty {
-  color: #6d6158;
+  color: #5b6478;
 }
 
 .message {
@@ -176,7 +171,8 @@ input:focus {
 
   .user-card,
   .section-header,
-  .card-actions {
+  .card-actions,
+  .actions {
     flex-direction: column;
     align-items: stretch;
   }

@@ -3,25 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Prosty  CRUD</title>
+    <title>Prosty CRUD</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   </head>
   <body>
     <main class="layout">
       <section class="hero">
         <p class="eyebrow">Prosta aplikacja CRUD</p>
-        <h1>Zarządzanie użytkownikami</h1>
-        <p class="subtitle">
-          Prosty projekt  przedstawiający CRUD we Flasku.
-        </p>
+        <h1>Zarzadzanie uzytkownikami</h1>
+        <p class="subtitle">Prosty projekt przedstawiajacy CRUD we Flasku.</p>
       </section>
 
       <section class="card">
-        <h2 id="form-title">Dodaj użytkownika</h2>
+        <h2 id="form-title">Dodaj uzytkownika</h2>
         <form id="user-form" class="form">
           <input type="hidden" id="user-id" />
 
-          <label for="name">Imię</label>
+          <label for="name">Imie</label>
           <input id="name" name="name" type="text" placeholder="Np. Marta" required />
 
           <label for="age">Wiek</label>
@@ -29,16 +27,17 @@
 
           <div class="actions">
             <button type="submit" class="btn primary">Zapisz</button>
-            <button type="button" id="cancel-edit" class="btn secondary" hidden>Anuluj edycję</button>
+            <button type="button" id="cancel-edit" class="btn secondary" hidden>Anuluj edycje</button>
           </div>
         </form>
-        <p id="message" class="message" aria-live="polite"></p>
+
+        <p id="message" class="message"></p>
       </section>
 
       <section class="card">
         <div class="section-header">
-          <h2>Lista użytkowników</h2>
-          <button id="refresh-btn" class="btn secondary">Odśwież</button>
+          <h2>Lista uzytkownikow</h2>
+          <button type="button" id="refresh-btn" class="btn secondary">Odswiez</button>
         </div>
         <div id="users-list" class="users-list"></div>
       </section>
@@ -46,128 +45,164 @@
 
     <script>
       const form = document.getElementById("user-form");
+      const formTitle = document.getElementById("form-title");
       const userIdInput = document.getElementById("user-id");
       const nameInput = document.getElementById("name");
       const ageInput = document.getElementById("age");
-      const message = document.getElementById("message");
-      const usersList = document.getElementById("users-list");
-      const formTitle = document.getElementById("form-title");
       const cancelEditButton = document.getElementById("cancel-edit");
       const refreshButton = document.getElementById("refresh-btn");
+      const message = document.getElementById("message");
+      const usersList = document.getElementById("users-list");
 
-      async function loadUsers() {
+      async function getUsers() {
         const response = await fetch("/api/users");
-        const users = await response.json();
+        return await response.json();
+      }
 
-        usersList.innerHTML = "";
+      function showMessage(text, isError) {
+        message.textContent = text;
+        message.className = isError ? "message error" : "message success";
+      }
 
-        if (!users.length) {
-          usersList.innerHTML = "<p class='empty'>Lista użytkowników jest pusta</p>";
-          return;
-        }
+      function clearForm() {
+        userIdInput.value = "";
+        nameInput.value = "";
+        ageInput.value = "";
+        formTitle.textContent = "Dodaj uzytkownika";
+        cancelEditButton.hidden = true;
+      }
 
-        users.forEach((user) => {
-          const article = document.createElement("article");
-          article.className = "user-card";
-          article.innerHTML = `
+      function fillForm(user) {
+        userIdInput.value = user.id;
+        nameInput.value = user.name;
+        ageInput.value = user.age;
+        formTitle.textContent = "Edytuj uzytkownika";
+        cancelEditButton.hidden = false;
+      }
+
+      function createUserCard(user) {
+        return `
+          <article class="user-card">
             <div>
               <h3>${user.name}</h3>
               <p>Wiek: ${user.age}</p>
               <span>ID: ${user.id}</span>
             </div>
             <div class="card-actions">
-              <button class="btn secondary" data-edit="${user.id}">Edytuj</button>
-              <button class="btn danger" data-delete="${user.id}">Usuń</button>
+              <button type="button" class="btn secondary edit-btn" data-id="${user.id}">Edytuj</button>
+              <button type="button" class="btn danger delete-btn" data-id="${user.id}">Usun</button>
             </div>
-          `;
-          usersList.appendChild(article);
-        });
+          </article>
+        `;
       }
 
-      function resetForm() {
-        form.reset();
-        userIdInput.value = "";
-        formTitle.textContent = "Dodaj użytkownika";
-        cancelEditButton.hidden = true;
+      async function loadUsers() {
+        const users = await getUsers();
+
+        if (users.length === 0) {
+          usersList.innerHTML = "<p class='empty'>Lista uzytkownikow jest pusta</p>";
+          return;
+        }
+
+        let html = "";
+
+        for (const user of users) {
+          html += createUserCard(user);
+        }
+
+        usersList.innerHTML = html;
       }
 
-      function showMessage(text, isError = false) {
-        message.textContent = text;
-        message.className = isError ? "message error" : "message success";
-      }
-
-      form.addEventListener("submit", async (event) => {
+      async function saveUser(event) {
         event.preventDefault();
 
-        const payload = {
+        const userId = userIdInput.value;
+        const user = {
           name: nameInput.value.trim(),
-          age: Number(ageInput.value),
+          age: Number(ageInput.value)
         };
 
-        const userId = userIdInput.value;
-        const url = userId ? `/api/users/${userId}` : "/api/users";
-        const method = userId ? "PUT" : "POST";
+        let url = "/api/users";
+        let method = "POST";
+
+        if (userId) {
+          url = "/api/users/" + userId;
+          method = "PUT";
+        }
 
         const response = await fetch(url, {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          method: method,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(user)
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          showMessage(data.error || "Wystąpił błąd.", true);
+          showMessage(data.error || "Wystapil blad.", true);
           return;
         }
 
-        showMessage(userId ? "Użytkownik został zaktualizowany." : "Użytkownik został dodany.");
-        resetForm();
+        showMessage(userId ? "Uzytkownik zostal zaktualizowany." : "Uzytkownik zostal dodany.", false);
+        clearForm();
         loadUsers();
-      });
+      }
 
-      usersList.addEventListener("click", async (event) => {
-        const editId = event.target.dataset.edit;
-        const deleteId = event.target.dataset.delete;
+      async function startEdit(userId) {
+        const users = await getUsers();
+        const user = users.find(function (item) {
+          return item.id === Number(userId);
+        });
 
-        if (editId) {
-          const response = await fetch("/api/users");
-          const users = await response.json();
-          const user = users.find((item) => item.id === Number(editId));
-
-          if (!user) {
-            showMessage("Nie znaleziono użytkownika.", true);
-            return;
-          }
-
-          userIdInput.value = user.id;
-          nameInput.value = user.name;
-          ageInput.value = user.age;
-          formTitle.textContent = "Edytuj użytkownika";
-          cancelEditButton.hidden = false;
-          showMessage("Tryb edycji aktywny.");
+        if (!user) {
+          showMessage("Nie znaleziono uzytkownika.", true);
+          return;
         }
 
-        if (deleteId) {
-          const response = await fetch(`/api/users/${deleteId}`, { method: "DELETE" });
-          const data = await response.json();
+        fillForm(user);
+        showMessage("Tryb edycji aktywny.", false);
+      }
 
-          if (!response.ok) {
-            showMessage(data.error || "Nie udało się usunąć użytkownika.", true);
-            return;
-          }
+      async function deleteUser(userId) {
+        const response = await fetch("/api/users/" + userId, {
+          method: "DELETE"
+        });
 
-          showMessage("Użytkownik został usunięty.");
-          if (userIdInput.value === deleteId) {
-            resetForm();
-          }
-          loadUsers();
+        const data = await response.json();
+
+        if (!response.ok) {
+          showMessage(data.error || "Nie udalo sie usunac uzytkownika.", true);
+          return;
+        }
+
+        showMessage("Uzytkownik zostal usuniety.", false);
+
+        if (userIdInput.value === String(userId)) {
+          clearForm();
+        }
+
+        loadUsers();
+      }
+
+      form.addEventListener("submit", saveUser);
+
+      usersList.addEventListener("click", function (event) {
+        const button = event.target;
+
+        if (button.classList.contains("edit-btn")) {
+          startEdit(button.dataset.id);
+        }
+
+        if (button.classList.contains("delete-btn")) {
+          deleteUser(button.dataset.id);
         }
       });
 
-      cancelEditButton.addEventListener("click", () => {
-        resetForm();
-        showMessage("Anulowano edycję.");
+      cancelEditButton.addEventListener("click", function () {
+        clearForm();
+        showMessage("Anulowano edycje.", false);
       });
 
       refreshButton.addEventListener("click", loadUsers);

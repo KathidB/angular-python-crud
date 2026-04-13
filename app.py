@@ -1,6 +1,9 @@
-from flask import Flask, jsonify, render_template, request
+from pathlib import Path
+
+from flask import Flask, jsonify, request, send_from_directory
 
 app = Flask(__name__)
+dist_folder = Path(__file__).parent / "dist" / "simple-crud-angular"
 
 users = [
     {"id": 1, "name": "Thomas", "age": 25},
@@ -10,11 +13,6 @@ users = [
     {"id": 5, "name": "Xavier", "age": 34},
 ]
 next_id = 6
-
-
-@app.route("/", methods=["GET"])
-def index():
-    return render_template("index.html")
 
 
 @app.route("/api/users", methods=["GET"])
@@ -77,5 +75,19 @@ def delete_user(user_id):
     return jsonify({"error": "User not found"}), 404
 
 
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def frontend(path):
+    if not dist_folder.exists():
+      return jsonify({"message": "Frontend is not built yet"}), 200
+
+    file_path = dist_folder / path
+
+    if path and file_path.exists() and file_path.is_file():
+        return send_from_directory(dist_folder, path)
+
+    return send_from_directory(dist_folder, "index.html")
+
+
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="127.0.0.1", port=5050, debug=False)

@@ -1,0 +1,52 @@
+<main class="layout">
+  <section class="hero">
+    <p class="eyebrow">CRUD FLASK ANGULAR</p>
+    <h1>Zarzadzanie userami</h1>
+    <p class="subtitle">Prosty CRUD w Angular i Flask.</p>
+  </section>
+
+  <section class="card">
+    <h2>{{ editingId !== null ? 'Edytuj uzytkownika' : 'Dodaj uzytkownika' }}</h2>
+
+    <form class="form" (ngSubmit)="saveUser()">
+      <label for="name">Imie</label>
+      <input id="name" type="text" [(ngModel)]="name" name="name" placeholder="Np. Marta">
+
+      <label for="age">Wiek</label>
+      <input id="age" type="number" [(ngModel)]="age" name="age" min="1" placeholder="Np. 24">
+
+      <div class="actions">
+        <button type="submit" class="btn primary">Zapisz</button>
+        <button type="button" class="btn secondary" *ngIf="editingId !== null" (click)="cancelEdit()">Anuluj edycje</button>
+      </div>
+    </form>
+
+    <p class="message" [class.error]="isError" [class.success]="!isError">{{ message }}</p>
+  </section>
+
+  <section class="card">
+    <div class="section-header">
+      <h2>Lista uzytkownikow</h2>
+      <button type="button" class="btn secondary" (click)="loadUsers()">Odswiez</button>
+    </div>
+
+    <div class="users-list" *ngIf="users.length > 0; else emptyState">
+      <article class="user-card" *ngFor="let user of users">
+        <div>
+          <h3>{{ user.name }}</h3>
+          <p>Wiek: {{ user.age }}</p>
+          <span>ID: {{ user.id }}</span>
+        </div>
+
+        <div class="card-actions">
+          <button type="button" class="btn secondary" (click)="startEdit(user)">Edytuj</button>
+          <button type="button" class="btn danger" (click)="deleteUser(user.id)">Usun</button>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #emptyState>
+      <p class="empty">Lista uzytkownikow jest pusta</p>
+    </ng-template>
+  </section>
+</main>
