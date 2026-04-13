@@ -36,3 +36,12 @@ npm start
 ```bash
 npm run build
 ```
+
+## Netlify
+
+Na Netlify frontend Angular jest publikowany jako statyczna strona, a endpointy `/api/users`
+sa obslugiwane przez Netlify Functions z katalogu `netlify/functions`.
+
+Wazne: dane uzytkownikow w tej wersji sa trzymane tylko w pamieci funkcji. To oznacza, ze po
+nowym uruchomieniu funkcji lub nowym deployu zmiany moga zniknac. Jesli chcesz trwale
+zapisywanie danych, trzeba podlaczyc baze danych lub Netlify Blobs.
