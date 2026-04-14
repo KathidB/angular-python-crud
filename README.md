@@ -2,6 +2,8 @@
 
 Prosta aplikacja do dodawania, edycji, wyswietlania i usuwania uzytkownikow.
 
+https://chimerical-begonia-7629e8.netlify.app/
+
 ## Technologie
 
 - Angular
